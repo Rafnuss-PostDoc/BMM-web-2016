@@ -95,9 +95,54 @@ html, body, #wrapper, #main, .fusion-row, #content, .page, .post-content, #yourF
 #mapid > div.leaflet-control-container > div.leaflet-top.leaflet-right{
 	max-width:247px;
 }
-
+#mapid > div.leaflet-control-container > div.leaflet-bottom.leaflet-left > div.leaflet-bar.leaflet-bar-horizontal.leaflet-bar-timecontrol.leaflet-control{
+	z-index: 0;
+}
 .btn-default:hover {
     color: #333;
     background-color: #e6e6e6;
 }
 .slider{max-width: 100%;}
+
+
+
+a[aria-expanded=true] .fa-chevron-up {
+   display: none;
+}
+a[aria-expanded=false] .fa-chevron-down {
+   display: none;
+}
+#mapid > div.leaflet-control-container > div.leaflet-bottom.leaflet-left > div.timeseries-div.leaflet-control{
+	    /* z-index: -1; */
+    border-bottom: none;
+	    margin-bottom: -3px;
+	        
+}
+#collapseExample{
+	border-bottom: none;
+	border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+#btn-timeserie-toggle{
+    margin-bottom: -2px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-bottom: none;
+        border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    width: fit-content;
+    margin-right: 10px;
+        color: initial;
+}
+#myDiv{
+	height: 300px;
+}
+
+#new-ts{
+	position: absolute;
+    right: 120px;
+    top: 43px;
+}
+#loading {
+    display: none;
+    position: absolute;
+}
