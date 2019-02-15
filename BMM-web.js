@@ -2,6 +2,19 @@
 var frame = [[43 , -5], [68, 30]];
 var pl
 var d3 = Plotly.d3;
+var DG_time;
+var drawn_density;
+d3colors = Plotly.d3.scale.category10();
+col=[]
+for (var i = 0; i < 11; i += 1) {
+	col.push(d3colors(i));
+}
+
+
+
+
+L.MakiMarkers.accessToken = token.mapbox;
+
 
 jQuery(document).ready(function() {
 	map = L.map('mapid',{
@@ -15,14 +28,16 @@ jQuery(document).ready(function() {
 		},
 		timeDimensionControlOptions: {
 			autoPlay: true,
-			timeZones: ['Local','UTC'],
 			playerOptions: {
-				buffer: 10,
+				buffer: 50,
+				minBufferReady: 10,
 				transitionTime: 100,
 				loop: true,
 			}
 		}
 	}).fitBounds(frame);
+
+	map.timeDimensionControl._dateUTC=false;
 	
 	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -32,47 +47,84 @@ jQuery(document).ready(function() {
 	}).addTo(map);
 
 
-	var folder = "Density_simulationMap_ImageOverlay/";
-	imageLayerDay = L.imageOverlay("https://raw.githubusercontent.com/Raphael-Nussbaumer-PhD/BMM/master/figure/mask_day_3857.png",frame,{opacity:0.5}).addTo(map);
-	imageLayerVar = L.imageOverlay("https://raw.githubusercontent.com/Raphael-Nussbaumer-PhD/BMM/master/figure/"+folder+"0000-00-00-00-00_3857.png",frame,{opacity:0.9}).addTo(map);
-	imageLayerRain = L.imageOverlay("https://raw.githubusercontent.com/Raphael-Nussbaumer-PhD/BMM/master/figure/rain/0000-00-00-00-00_3857.png",frame,{opacity:0.8}).addTo(map);
+	var folderDens = "Density_estimationMap_ImageOverlay/";
+	var folderFlight = "Quiver_est/";
+	var zoom='';//'_4/';
+	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/mask_day_3857.png",frame,{opacity:0.5}).addTo(map);
+	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/"+folderDens+"0000-00-00-00-00_3857.png",frame,{opacity:0.9}).addTo(map);
+	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/"+folderFlight+zoom+"0000-00-00-00-00_3857.png",frame,{opacity:0.9});//.addTo(map);
+	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/rain/0000-00-00-00-00_3857.png",frame,{opacity:0.8}).addTo(map);
 
 
-	ImageTimeLayerVar = L.timeDimension.layer.imageOverlay(imageLayerVar, {
+	ImageTimeLayerDens = L.timeDimension.layer.imageOverlay(imageLayerDens, {
 		getUrlFunction: function(baseUrl, time) {
-			var t = new Date(time-1000*60*60*2);
-			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("figure/") + 7);
-			return beginUrl + folder + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
+			var t = new Date(time);//-1000*60*60*2);
+			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("layer/") + 6);
+			return beginUrl + folderDens + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
 		}
 	}).addTo(map);
 
+	ImageTimeLayerFlight = L.timeDimension.layer.imageOverlay(imageLayerFlight, {
+		getUrlFunction: function(baseUrl, time) {
+			var t = new Date(time);//-1000*60*60*2);
+			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("layer/") + 6);
+			return beginUrl + folderFlight + zoom + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
+		}
+	}).addTo(map);
+
+	/*map.on('zoomend', function() {
+		if(map.getZoom()<5){
+			zoom='_4/';
+		}else{
+			zoom='/';
+		}
+	});*/
+
 	ImageTimeLayerRain = L.timeDimension.layer.imageOverlay(imageLayerRain, {
 		getUrlFunction: function(baseUrl, time) {
-			var t = new Date(time-1000*60*60*2);
+			var t = new Date(time);//-1000*60*60*2);
 			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("rain/") + 5);
 			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
 		}
 	}).addTo(map);
-
-	map.timeDimension.on('timeload', function(data) {
-		var date = new Date(map.timeDimension.getCurrentTime());
-		jQuery('.timecontrol-date').html(date.toLocaleString())
-		date_str = date.toISOString().replace('T',' ').slice(0,16);
-		Plotly.restyle(gd, {x: [[date_str, date_str]]} ,0)
-	});
-
 
 	
 
 	var figure = L.control({position: 'bottomleft'});
 	figure.onAdd = function (map) {
 		var div = L.DomUtil.create('div','timeseries-div');
-		div.innerHTML = '<a data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample" class="btn form-control" id="btn-timeserie-toggle">Time Series <i class="fa fa-chevron-up pull-up"></i><i class="fa fa-chevron-down pull-up"></i></a>';
-		div.innerHTML += '<div class="leaflet-bar leaflet-bar-horizontal leaflet-bar-timecontrol figure collapse" id="collapseExample"><div id="myDiv" style="100%"></div><button class="btn btn-sm btn-primary" id="new-ts" title="Choose a location on the map">Add Timeline</button></div>';
+		div.innerHTML = '	<ul class="nav nav-tabs" id="myTab" role="tablist"><li class="nav-item">\
+		<a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true"><i class="fa fa-chevron-down"></i></a>\
+		</li><li class="nav-item">\
+		<a class="nav-link" id="density-tab" data-toggle="tab" href="#tab_density" role="tab" aria-controls="tab_density" aria-selected="false">Density Profile [bird/km<sup>2</sup>]</a>\
+		</li><li class="nav-item">\
+		<a class="nav-link" id="sum-tab" data-toggle="tab" href="#tab_sum" role="tab" aria-controls="tab_sum" aria-selected="false">Sum Profile [bird]</a>\
+		</li><li class="nav-item">\
+		<a class="nav-link" id="mtr-tab" data-toggle="tab" href="#tab_mtr" role="tab" aria-controls="tab_mtr" aria-selected="false">MTR Profile [bird/km/hr]</a>\
+		</li></ul>\
+		<div class="tab-content" id="myTabContent">\
+		<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab"></div>\
+		<div class="tab-pane fade" id="tab_density" role="tabpanel" aria-labelledby="density-tab">\
+		<div id="plot_density"></div>\
+		<div id="mapbuttons_density_div" class="leaflet-bar leaflet-control mapbuttons_div"></div>\
+		</div>\
+		<div class="tab-pane fade" id="tab_sum" role="tabpanel" aria-labelledby="sum-tab">\
+		<div id="plot_sum"></div>\
+		<div id="mapbuttons_sum_div" class="leaflet-bar leaflet-control mapbuttons_div"></div>\
+		</div>\
+		<div class="tab-pane fade" id="tab_mtr" role="tabpanel" aria-labelledby="mtr-tab">\
+		<div id="plot_mtr"></div>\
+		<div id="mapbuttons_mtr_div" class="leaflet-bar leaflet-control mapbuttons_div"></div>\
+		</div>\
+		</div>';
+		//div.innerHTML = '<a data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample" class="btn form-control" id="btn-timeserie-toggle">Time Series <i class="fa fa-chevron-up pull-up"></i><i class="fa fa-chevron-down pull-up"></i></a>';
+		//<span id="new-ts">Query the map with point, transect of area: </span>\
+
 		div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
 		return div
 	};
 	figure.addTo(map);
+
 
 	figure.getContainer().addEventListener('mouseover', function () {
 		map.dragging.disable();
@@ -86,40 +138,38 @@ jQuery(document).ready(function() {
 		var div = L.DomUtil.create('div', 'info legend');
 		div.innerHTML = '<div class="form-group" id="select-map">\
 		<select class="form-control" id="sel1">\
-		<option value=\'{\"folder\":\"Density_simulationMap_ImageOverlay/\",\"minval\":\"-5\",\"maxval\":\"5\",\"titleval\":\"Bird Density [Log bird/m<sup>2</sup>]\"}\' >Simulation Map of Density</option>\
-		<option value=\'{\"folder\":\"Density_estimationMap_ImageOverlay/\",\"minval\":\"-2\",\"maxval\":\"5\",\"titleval\":\"Bird Density [Log bird/m<sup>2</sup>]\"}\'>Estimation Map of Density</option>\
-		<option value=\'{\"folder\":\"FlightSpeed_estimationMap_ImageOverlay/\",\"minval\":\"0\",\"maxval\":\"20\",\"titleval\":\"Bird Flight Speed [m/s]\"}\'>Estimation Map of Flight Speed</option>\
-		<option value=\'{\"folder\":\"FlightSpeed_simulationMap_ImageOverlay/\",\"minval\":\"0\",\"maxval\":\"20\",\"titleval\":\"Bird Flight Speed [m/s]\"}\'>Simulation Map of Flight Speed</option>\
-		<option value=\'{\"folder\":\"FlightDir_estimationMap_ImageOverlay/\",\"minval\":\"0\",\"maxval\":\"360\",\"titleval\":\"Bird Flight Direction [deg]\"}\'>Estimation Map of Flight Direction</option>\
-		<option value=\'{\"folder\":\"FlightDir_simulationMap_ImageOverlay/\",\"minval\":\"0\",\"maxval\":\"360\",\"titleval\":\"Bird Flight Direction [deg]\"}\'>Simulation Map of Flight Direction</option>\
+		<option value=\'{\"folderDens\":\"Density_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est\",\"minval\":\"-2\",\"maxval\":\"5\",\"titleval\":\"Bird Density [Log bird/km<sup>2</sup>]\"}\'>Estimation</option>\
+		<option disable value=\'{\"folderDens\":\"Density_simulationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_sim\",\"minval\":\"-5\",\"maxval\":\"5\",\"titleval\":\"Bird Density [Log bird/km<sup>2</sup>]\"}\' >Simulation</option>\
+		<option disable value=\'{\"folderDens\":\"SinkSource_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est\",\"minval\":\"-10\",\"maxval\":\"10\",\"titleval\":\"Bird Density [bird/km<sup>2</sup>/15min]\"}\'>Sink/Source</option>\
+		<option value=\'{\"folderDens\":\"MTR_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est\",\"minval\":\"0\",\"maxval\":\"3000\",\"titleval\":\"Mean Traffic Rate (MTR) [bird/km/hr]\"}\'>Mean Traffic Rate (MTR)</option>\
 		</select>\
 		</div>';
 
 		div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
 
 		div.innerHTML += '<div id="canvas-div" class="form-control">\
-		<p id="canvas-title">Bird Density [Log bird/m<sup>2</sup>]</p>\
+		<p id="canvas-title">Bird Density [Log bird/km<sup>2</sup>]</p>\
 		<canvas id="canvas" width="247" height="20" ></canvas>\
-		<p id="canvas-range"><span id="canvas-min">0</span><span id="canvas-max">10</span></p>\
+		<p id="canvas-range"><span id="canvas-min">-2</span><span id="canvas-max">5</span></p>\
 		</div>';
 
-		div.innerHTML += '<div class="form-control container-fluid"><div class="row">\
-		<div class="col-sm-6">\
-		<canvas id="canvas-day" width="30" height="20" ></canvas> Day\
-		</div><div class="col-sm-6">\
-		<canvas id="canvas-rain" width="30" height="20" ></canvas> Rain\
-		</div></div><div class="row">\
-		<div class="col-sm-6">\
-		<div class="slidecontainer"><input type="range" min="1" max="100" value="30" class="slider" id="opacity-day"></div>\
-		</div><div class="col-sm-6">\
+		div.innerHTML += '<div class="form-control container-fluid" id="layer-div"><div class="row">'+
+		/*<div class="col-sm-6"><canvas id="canvas-day" width="30" height="20" ></canvas> Day</div>*/
+		'<div class="col-sm-12"><canvas id="canvas-rain" width="30" height="20" ></canvas> Rain (>0.01mm/hr)</div>\
+		</div><div class="row">'+
+		/*'<div class="col-sm-6"><div class="slidecontainer"><input type="range" min="1" max="100" value="30" class="slider" id="opacity-day"></div></div>*/
+		'<div class="col-sm-12">\
 		<div class="slidecontainer"><input type="range" min="1" max="100" value="80" class="slider" id="opacity-rain"></div>\
+		</div></div>\
+		<div class="row"><div class="col-sm-12">\
+		<div class="checkbox"><label class="checkbox-inline"><input type="checkbox" checked id="checkbox1">Flight quiver</label></div>\
 		</div></div>';
 
 		div.innerHTML += '<div id="learnmore-div" class="form-control">\
-		<a role="button" class="btn btn-default btn-sm"href="https://raphael-nussbaumer-phd.github.io/BMM/"><i class="fas fa-external-link-alt"></i></a>\
-		<a role="button" class="btn btn-default btn-sm"href="https://github.com/Raphael-Nussbaumer-PhD/BMM"><i class="fab fa-github"></i></a>\
-		<a role="button" class="btn btn-default btn-sm" href="https://raphael-nussbaumer-phd.github.io/BMM/html/Density_modelInf_crossValid"><img width="27" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Matlab_Logo.png/267px-Matlab_Logo.png"></a>\
-		<a role="button" class="btn btn-default btn-sm" href="https://github.com/Raphael-Nussbaumer-PhD/BMM"><i class="fas fa-download"></i></a>\
+		<a role="button" class="btn btn-default btn-sm" href="https://Rafnuss-PostDoc.github.io/BMM/" target="_blank"><i class="fas fa-external-link-alt"></i></a>\
+		<a role="button" class="btn btn-default btn-sm" href="https://github.com/Rafnuss-PostDoc/BMM" target="_blank"><i class="fab fa-github"></i></a>\
+		<a role="button" class="btn btn-default btn-sm" href="https://Rafnuss-PostDoc.github.io/BMM/html/Density_modelInf_crossValid" target="_blank"><img width="27" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Matlab_Logo.png/267px-Matlab_Logo.png"></a>\
+		<a role="button" class="btn btn-default btn-sm" href="https://github.com/Rafnuss-PostDoc/BMM" target="_blank"><i class="fas fa-download"></i></a>\
 		</div>';
 		return div;
 	};
@@ -133,18 +183,27 @@ jQuery(document).ready(function() {
 	});
 
 
+	jQuery('#checkbox1').change(function() {
+		if(jQuery(this).is(":checked")) {
+			imageLayerFlight.setOpacity(100)
+		} else {
+			imageLayerFlight.setOpacity(0)
+		}
+	});
+
 	jQuery('#sel1').change(function(){
 		var sel = jQuery.parseJSON(this.value);
-		folder = sel.folder;
+		folderDens = sel.folderDens;
+		folderFlight = sel.folderFlight;
 		jQuery('#canvas-min').html(sel.minval)
 		jQuery('#canvas-max').html(sel.maxval)
 		jQuery('#canvas-title').html(sel.titleval)
 	});
 
-	var sliderDay = document.getElementById("opacity-day");
+	/*var sliderDay = document.getElementById("opacity-day");
 	sliderDay.oninput = function() {
 		imageLayerDay.setOpacity(this.value/100);
-	}
+	}*/
 	var sliderRain = document.getElementById("opacity-rain");
 	sliderRain.oninput = function() {
 		ImageTimeLayerRain.setOpacity(this.value/100);
@@ -160,10 +219,10 @@ jQuery(document).ready(function() {
 	ctx.fillStyle = gradient;
 	ctx.fillRect(0, 0, 247, 20);
 
-	var canvas = document.getElementById("canvas-day");
+	/*var canvas = document.getElementById("canvas-day");
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#CCCCCC";
-	ctx.fillRect(0,0,30,20);
+	ctx.fillRect(0,0,30,20);*/
 
 	var canvas = document.getElementById("canvas-rain");
 	var ctx = canvas.getContext("2d");
@@ -171,82 +230,49 @@ jQuery(document).ready(function() {
 	ctx.fillRect(0,0,30,20);
 
 
-	var gd3 = d3.select('#myDiv').style({
+	gd_style ={
 		width: '100%',
 		'margin-left': '0px',
-
-		height: '300px',
+		height: '290px',
 		'max-height': 'calc( 100vh - 105px )',
 		'margin-top': '0px'
-	});
-	gd = gd3.node();
+	};
 
+	gd_density = d3.select('#plot_density').style(gd_style).node();
+	gd_sum = d3.select('#plot_sum').style(gd_style).node();
+	gd_mtr = d3.select('#plot_mtr').style(gd_style).node();
+	gd_density.i_group=1;
+	gd_sum.i_group=1;
+	gd_mtr.i_group=1;
 
-	Plotly.d3.csv("https://raw.githubusercontent.com/Raphael-Nussbaumer-PhD/BMM/master/figure/Density_latlon_csv/all.csv", function(err, rows){
-		d_date =rows.map(function(row) { return row['date']; })
-		d_est =rows.map(function(row) { return row['est']=='NaN' ? '0' : row['est']; })
-		p1sigma =rows.map(function(row) { return row['p1sigma']=='NaN' ? '0' : row['p1sigma']; })
-		m1sigma = rows.map(function(row) { return row['m1sigma']=='NaN' ? '0' : row['m1sigma']; })
+	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/BMM-web/layer/exportDensityGrid_time.json",function(data){
+		
+		DG_time=data[0];
 
 		var traceDate = {
 			type: "scatter",
 			name: 'Time',
-			x: [d_date[0], d_date[0] ],
+			x: [ DG_time[0], DG_time[0] ],
 			y: [0, 100],
 			line: {color: '#7F7F7F'},
 			showlegend:false,
 			hoverinfo:'none',
 		};
-		var trace1 = {
-			x: d_date, 
-			y: m1sigma, 
-			line: {width: 0}, 
-			marker: {color: "444"}, 
-			mode: "lines", 
-			type: "scatter",
-			legendgroup: 'groupAvg',
-			showlegend:false,
-			hoverinfo:'none'
-		};
-		var trace2 = {
-			x: d_date, 
-			y: d_est, 
-			fill: "tonexty", 
-			fillcolor: "rgba(68, 68, 68, 0.3)", 
-			line: {color: "rgb(31, 119, 180)"}, 
-			mode: "lines", 
-			name: "Average", 
-			type: "scatter",
-			legendgroup: 'groupAvg',
-			hoverinfo:'none'
-		};
-		var trace3 = {
-			x: d_date, 
-			y: p1sigma, 
-			fill: "tonexty", 
-			fillcolor: "rgba(68, 68, 68, 0.3)", 
-			line: {width: 0}, 
-			marker: {color: "444"}, 
-			mode: "lines", 
-			type: "scatter",
-			showlegend:false,
-			legendgroup: 'groupAvg',
-			hoverinfo:'none',
-		};
 
 		var layout = {
+			autosize:true,
 			margin: {
-				l: 20,
-				r: 0,
-				b: 18,
+				l: 35,
+				r: 35,
+				b: 15,
 				t: 0,
 			},
-			title:"Density [bird/m^2]",
+			//title:"Density [bird/km<sup>2</sup>]",
 			showlegend: true,
 			legend: {"orientation": "h", x: 0,y: 1},
 			xaxis: {
-				autorange: true,
-				range: [d_date[0], d_date[d_date.length - 1] ],
+				//autorange: true,
+				range: [DG_time[0], DG_time[DG_time.length - 1] ],
 				rangeselector: {buttons: [
 					{
 						count: 1,
@@ -268,142 +294,208 @@ jQuery(document).ready(function() {
 			},
 			yaxis: {
 				autorange: true,
-				range: [Math.min(d_est), Math.max(d_est)],
+				//range: [Math.min(...DG_all.est), Math.max(...DG_all.est)],
 				type: 'linear',
 			}
 		};
 
-		pl = Plotly.newPlot(gd, [traceDate,trace1, trace2, trace3], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
-	})
+		Plotly.newPlot(gd_density, [traceDate], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
+		Plotly.newPlot(gd_sum, [traceDate], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
+		Plotly.newPlot(gd_mtr, [traceDate], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
 
-	window.onresize = function() {
-		Plotly.Plots.resize(gd);
-	};
+		// Update figure with time
+		map.timeDimension.on('timeload', function(data) {
+			var date = new Date(map.timeDimension.getCurrentTime());
+			date_str = date.toISOString().replace('T',' ').slice(0,16);
+			Plotly.restyle(gd_density, {x: [[date_str, date_str]]} ,0)
+			Plotly.restyle(gd_sum, {x: [[date_str, date_str]]} ,0)
+			Plotly.restyle(gd_mtr, {x: [[date_str, date_str]]} ,0)
+			//gd.data[0].x=[date_str, date_str];
+		});
 
-	jQuery('#btn-timeserie-toggle').click(function(){
-		Plotly.Plots.resize(gd);
-	})
-
-
-	setTimeout(function (){
-		Plotly.Plots.resize(gd);
-		jQuery('[data-title="Toggle Spike Lines"]').remove();
-		jQuery('[data-title="Produced with Plotly"]').remove()
-		jQuery('[data-title="Lasso Select"]').remove()
-		jQuery('[data-title="Box Select"]').remove()
-	}, 2000);
-
-
-
-	jQuery("#new-ts").click(function() {
 		setTimeout(function (){
-			jQuery('#new-ts').toggleClass('active')
-			jQuery('.leaflet-container').css( 'cursor', 'crosshair' );
-			jQuery("#loading").show(); 
-		}, 500);
+			Plotly.Plots.resize(gd_density);
+			Plotly.Plots.resize(gd_mtr);
+			jQuery('[data-title="Toggle Spike Lines"]').remove();
+			jQuery('[data-title="Produced with Plotly"]').remove()
+			jQuery('[data-title="Lasso Select"]').remove()
+			jQuery('[data-title="Box Select"]').remove()
+		}, 2000);
+
+
+		jQuery.getJSON("https://bmm.raphaelnussbaumer.com/api/all/",function(data){
+			name='Gloabal Average (2.3M km<sup>2</sup>)';
+			loadNewData(gd_density,data,name)
+		})
+
 	});
 
-	map.on('click', function(e) {
-    	//console.log("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
-    	if (jQuery('#new-ts').hasClass('active')){
-    		jQuery("#loading").hide(); 
-    		loadNewData(e.latlng)
-    		jQuery('#new-ts').removeClass('active')
-    		jQuery('.leaflet-container').css( 'cursor', '' );
-    	}
-    });
 
+	window.onresize = function() {
+		Plotly.Plots.resize(gd_density);
+		Plotly.Plots.resize(gd_sum);
+		Plotly.Plots.resize(gd_mtr);
+	};
+
+	jQuery('.nav-item a').on('shown.bs.tab', function(event){
+		Plotly.Plots.resize(gd_density);
+		Plotly.Plots.resize(gd_sum);
+		Plotly.Plots.resize(gd_mtr);
+	});
+
+	var drawn = new L.FeatureGroup();
+	map.addLayer(drawn);
+
+	var drawControl_density = new L.Control.Draw({
+		edit: {
+			featureGroup: drawn,
+			remove: false,
+			edit:false,
+		},
+		draw: {
+			rectangle: false,
+			polyline:false,
+			circle: false,
+			circlemarker: false,
+			polygon:false,
+			marker:{
+				icon: new L.MakiMarkers.icon({icon: "circle-stroked", color: '#000000' , size: "m"})
+			}
+		},
+	});
+	var drawControl_sum = new L.Control.Draw({
+		edit: {
+			featureGroup: drawn,
+			remove: false,
+			edit:false,
+		},
+		draw: {
+			rectangle: false,
+			polyline:false,
+			circle: false,
+			circlemarker: false,
+			marker: false,
+		},
+	});
+	var drawControl_mtr = new L.Control.Draw({
+		edit: {
+			featureGroup: drawn,
+			remove: false,
+			edit:false,
+		},
+		draw: {
+			rectangle: false,
+			polygon:false,
+			circle: false,
+			circlemarker: false,
+			marker: false,
+		},
+	});
+
+	map.on(L.Draw.Event.CREATED, function (e) {
+		if ( e.layerType === 'marker') {
+			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/marker_density/' + e.layer._latlng.lat +','+e.layer._latlng.lng, function(data){
+				e.layer.setIcon(L.MakiMarkers.icon({icon: "circle-stroked", color: col[(gd.i_group*3-1)%10], size: "m"}));
+				name = Math.round(e.layer._latlng.lat/2)*2+"°N "+Math.round(e.layer._latlng.lng/2)*2+"°NE";
+				loadNewData(gd_density,data,name)
+			})
+		} else if ( e.layerType === 'polygon') {
+			polyPoints = e.layer.getLatLngs();
+			var pts_string = polyPoints[0].map( (e) => e.lat+","+e.lng).join('/');
+			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polygon_sum/'+pts_string , function(data){
+				e.layer.setStyle({fillColor: col[(2+gd.i_group*3)%10], color:col[(gd.i_group*3-1)%10]});
+				name = "Polygon ("+KMBFormatter(data[1])+' km<sup>2</sup>)';
+				loadNewData(gd_sum,data[0],name)
+			})
+		} else if ( e.layerType === 'polyline') {
+			polyPoints = e.layer.getLatLngs();
+			var pts_string = polyPoints.map( (e) => e.lat+","+e.lng).join('/');
+			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polyline_mtr/' + pts_string, function(data){
+				e.layer.setStyle({fillColor: col[(2+gd.i_group*3)%10], color:col[(gd.i_group*3-1)%10]});
+				name = "Polyline ("+KMBFormatter(data[1])+' km)';
+				loadNewData(gd_mtr,data[0],name)
+			})
+		}
+		drawn.addLayer(e.layer);
+	});
+
+	map.on('draw:drawvertex', e => {
+		const layerIds = Object.keys(e.layers._layers);
+		if (layerIds.length > 1) {
+			const secondVertex = e.layers._layers[layerIds[1]]._icon;
+			requestAnimationFrame(() => secondVertex.click());
+		}
+
+	});
+
+	map.addControl(drawControl_density).addControl(drawControl_sum).addControl(drawControl_mtr);
+	L.DomUtil.get('mapbuttons_density_div').appendChild(drawControl_density.getContainer());
+	L.DomUtil.get('mapbuttons_sum_div').appendChild(drawControl_sum.getContainer());
+	L.DomUtil.get('mapbuttons_mtr_div').appendChild(drawControl_mtr.getContainer());
 
 });
 
 
 
 
-lng=[-5,-3,-1, 1, 3, 5, 7, 9,11,13,15,17,19,21,23,25,27,29];
-lat=[ 43,45,47,49,51,53,55,57,59,61,63,65,67];
-d3colors = Plotly.d3.scale.category10();
-i_group=1;
 
+function loadNewData(gd,data,name){
+	Plotly.addTraces(gd,{
+		x: DG_time, 
+		y: data[0], 
+		fill: "tonexty", 
+		fillcolor: "rgba(68, 68, 68, 0.3)", 
+		//line: {color: "rgb(31, 119, 180)"}, 
+		mode: "lines", 
+		name: name,
+		type: "scatter",
+		legendgroup: 'group'+gd.i_group,
+		hoverinfo:'none'
+	});
 
-
-function loadNewData(latlng){
-	console.log(latlng)
-
-	if( latlng.lng>lng[0] & latlng.lng<lng[lng.length-1] & latlng.lat>lat[0] & latlng.lat<lat[lat.length-1]  ){
-
-		var closest_lng = lng.reduce(function(prev, curr) {
-			return (Math.abs(curr - latlng.lng) < Math.abs(prev - latlng.lng) ? curr : prev);
+	if (data.length==3){
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data[1], 
+			line: {width: 0}, 
+			marker: {color: "444"}, 
+			mode: "lines", 
+			type: "scatter",
+			legendgroup: 'group'+gd.i_group,
+			showlegend:false,
+			hoverinfo:'none'
 		});
-
-		var closest_lat = lat.reduce(function(prev, curr) {
-			return (Math.abs(curr - latlng.lat) < Math.abs(prev - latlng.lat) ? curr : prev);
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data[2], 
+			fill: "tonexty", 
+			fillcolor: "rgba(68, 68, 68, 0.3)", 
+			line: {width: 0}, 
+			marker: {color: "444"}, 
+			mode: "lines", 
+			type: "scatter",
+			showlegend:false,
+			legendgroup: 'group'+gd.i_group,
+			hoverinfo:'none',
 		});
-
-		Plotly.d3.csv("https://raw.githubusercontent.com/Raphael-Nussbaumer-PhD/BMM/master/figure/Density_latlon_csv/"+closest_lat+"_"+closest_lng+".csv", function(err, rows){
-			d_date =rows.map(function(row) { return row['date']; })
-			d_est =rows.map(function(row) { return row['est']=='NaN' ? '0' : row['est']; })
-			p1sigma =rows.map(function(row) { return row['p1sigma']=='NaN' ? '0' : row['p1sigma']; })
-			m1sigma = rows.map(function(row) { return row['m1sigma']=='NaN' ? '0' : row['m1sigma']; })
-
-			//col = d3colors(i_group);
-
-			Plotly.addTraces(gd,{
-				x: d_date, 
-				y: m1sigma, 
-				line: {width: 0}, 
-				marker: {color: "444"}, 
-				mode: "lines", 
-				type: "scatter",
-				legendgroup: 'group'+i_group,
-				showlegend:false,
-				hoverinfo:'none'
-			});
-			Plotly.addTraces(gd,{
-				x: d_date, 
-				y: d_est, 
-				fill: "tonexty", 
-				fillcolor: "rgba(68, 68, 68, 0.3)", 
-				//line: {color: "rgb(31, 119, 180)"}, 
-				mode: "lines", 
-				name: closest_lat+"°N "+closest_lng+"°NE",
-				type: "scatter",
-				legendgroup: 'group'+i_group,
-				hoverinfo:'none'
-			});
-			Plotly.addTraces(gd,{
-				x: d_date, 
-				y: p1sigma, 
-				fill: "tonexty", 
-				fillcolor: "rgba(68, 68, 68, 0.3)", 
-				line: {width: 0}, 
-				marker: {color: "444"}, 
-				mode: "lines", 
-				type: "scatter",
-				showlegend:false,
-				legendgroup: 'group'+i_group,
-				hoverinfo:'none',
-			});
-
-			i_group+=1;
-
-		})
 	}
+	gd.i_group+=1;
 }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
+function KMBFormatter(num) {
+	if (num > 999999999 ){
+		num = (num/1000000000).toFixed(1) + 'B'
+	} else if (num > 999999 ){
+		num = (num/1000000).toFixed(1) + 'M'
+	} else if(num > 999){
+		num =(num/1000).toFixed(1) + 'K'
+	}
+	return num
+}
 
 
 
