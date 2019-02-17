@@ -13,7 +13,7 @@ for (var i = 0; i < 11; i += 1) {
 
 
 
-L.MakiMarkers.accessToken = token.mapbox;
+L.MakiMarkers.accessToken = "pk.eyJ1IjoicmFmbnVzcyIsImEiOiIzMVE1dnc0In0.3FNMKIlQ_afYktqki-6m0g";
 
 
 jQuery(document).ready(function() {
@@ -21,9 +21,9 @@ jQuery(document).ready(function() {
 		timeDimension: true,
 		timeDimensionControl: true,
 		timeDimensionOptions: {
-			timeInterval: "2016-09-18T12:00:00Z/2016-10-09T12:00:00Z",
+			timeInterval: "2016-09-19T00:00:00Z/2016-10-10T00:00:00Z",
 			period: "PT15M",
-			currentTime: Date.parse("2016-09-18T12:00:00Z"),
+			currentTime: Date.parse("2016-09-19T00:00:00Z"),
 			updateTimeDimensionMode: "replace",
 		},
 		timeDimensionControlOptions: {
@@ -50,16 +50,16 @@ jQuery(document).ready(function() {
 	var folderDens = "Density_estimationMap_ImageOverlay/";
 	var folderFlight = "Quiver_est/";
 	var zoom='';//'_4/';
-	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/mask_day_3857.png",frame,{opacity:0.5}).addTo(map);
-	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/"+folderDens+"0000-00-00-00-00_3857.png",frame,{opacity:0.9}).addTo(map);
-	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/"+folderFlight+zoom+"0000-00-00-00-00_3857.png",frame,{opacity:0.9});//.addTo(map);
-	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/BMM-web/layer/rain/0000-00-00-00-00_3857.png",frame,{opacity:0.8}).addTo(map);
+	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/mask_day_3857.png",frame,{opacity:0.5}).addTo(map);
+	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/"+folderDens+"0000-00-00-00-00_3857.png",frame,{opacity:0.9}).addTo(map);
+	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/"+folderFlight+zoom+"0000-00-00-00-00_3857.png",frame,{opacity:0.9});//.addTo(map);
+	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/rain/0000-00-00-00-00_3857.png",frame,{opacity:0.8}).addTo(map);
 
 
 	ImageTimeLayerDens = L.timeDimension.layer.imageOverlay(imageLayerDens, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("layer/") + 6);
+			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("data/") + 5);
 			return beginUrl + folderDens + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
 		}
 	}).addTo(map);
@@ -67,7 +67,7 @@ jQuery(document).ready(function() {
 	ImageTimeLayerFlight = L.timeDimension.layer.imageOverlay(imageLayerFlight, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("layer/") + 6);
+			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("data/") + 5);
 			return beginUrl + folderFlight + zoom + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
 		}
 	}).addTo(map);
@@ -241,11 +241,11 @@ jQuery(document).ready(function() {
 	gd_density = d3.select('#plot_density').style(gd_style).node();
 	gd_sum = d3.select('#plot_sum').style(gd_style).node();
 	gd_mtr = d3.select('#plot_mtr').style(gd_style).node();
-	gd_density.i_group=1;
-	gd_sum.i_group=1;
+	gd_density.i_group=0;
+	gd_sum.i_group=0;
 	gd_mtr.i_group=1;
 
-	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/BMM-web/layer/exportDensityGrid_time.json",function(data){
+	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/data/exportGrid_time.json",function(data){
 		
 		DG_time=data[0];
 
@@ -323,9 +323,13 @@ jQuery(document).ready(function() {
 		}, 2000);
 
 
-		jQuery.getJSON("https://bmm.raphaelnussbaumer.com/api/all/",function(data){
-			name='Gloabal Average (2.3M km<sup>2</sup>)';
-			loadNewData(gd_density,data,name)
+		jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polygon_sum/69,-7/69,32/40,32/40,-7', function(data){
+			var name = "Total Sum ("+KMBFormatter(data[1])+' km<sup>2</sup>)';
+			loadNewData(gd_sum,data[0],name)
+
+			var name = "Total Average ("+KMBFormatter(data[1])+' km<sup>2</sup>)';
+			var d = data[0].map( (e) => e/data[1]);
+			loadNewData(gd_density,d,name)
 		})
 
 	});
@@ -395,15 +399,15 @@ jQuery(document).ready(function() {
 	map.on(L.Draw.Event.CREATED, function (e) {
 		if ( e.layerType === 'marker') {
 			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/marker_density/' + e.layer._latlng.lat +','+e.layer._latlng.lng, function(data){
-				e.layer.setIcon(L.MakiMarkers.icon({icon: "circle-stroked", color: col[(gd.i_group*3-1)%10], size: "m"}));
+				e.layer.setIcon(L.MakiMarkers.icon({icon: "circle-stroked", color: col[(gd_density.i_group*3)%10], size: "m"}));
 				name = Math.round(e.layer._latlng.lat/2)*2+"°N "+Math.round(e.layer._latlng.lng/2)*2+"°NE";
-				loadNewData(gd_density,data,name)
+				loadNewData(gd_density,[data.density.est,data.density.q10,data.density.q90],name)
 			})
 		} else if ( e.layerType === 'polygon') {
 			polyPoints = e.layer.getLatLngs();
 			var pts_string = polyPoints[0].map( (e) => e.lat+","+e.lng).join('/');
 			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polygon_sum/'+pts_string , function(data){
-				e.layer.setStyle({fillColor: col[(2+gd.i_group*3)%10], color:col[(gd.i_group*3-1)%10]});
+				e.layer.setStyle({fillColor: col[(gd_sum.i_group+1)%10], color:col[(gd_sum.i_group+1)%10]});
 				name = "Polygon ("+KMBFormatter(data[1])+' km<sup>2</sup>)';
 				loadNewData(gd_sum,data[0],name)
 			})
@@ -411,7 +415,7 @@ jQuery(document).ready(function() {
 			polyPoints = e.layer.getLatLngs();
 			var pts_string = polyPoints.map( (e) => e.lat+","+e.lng).join('/');
 			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polyline_mtr/' + pts_string, function(data){
-				e.layer.setStyle({fillColor: col[(2+gd.i_group*3)%10], color:col[(gd.i_group*3-1)%10]});
+				e.layer.setStyle({fillColor: col[(2+gd_mtr.i_group*3)%10], color:col[(gd_mtr.i_group*3-1)%10]});
 				name = "Polyline ("+KMBFormatter(data[1])+' km)';
 				loadNewData(gd_mtr,data[0],name)
 			})
@@ -440,19 +444,6 @@ jQuery(document).ready(function() {
 
 
 function loadNewData(gd,data,name){
-	Plotly.addTraces(gd,{
-		x: DG_time, 
-		y: data[0], 
-		fill: "tonexty", 
-		fillcolor: "rgba(68, 68, 68, 0.3)", 
-		//line: {color: "rgb(31, 119, 180)"}, 
-		mode: "lines", 
-		name: name,
-		type: "scatter",
-		legendgroup: 'group'+gd.i_group,
-		hoverinfo:'none'
-	});
-
 	if (data.length==3){
 		Plotly.addTraces(gd,{
 			x: DG_time, 
@@ -465,6 +456,20 @@ function loadNewData(gd,data,name){
 			showlegend:false,
 			hoverinfo:'none'
 		});
+
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data[0], 
+			fill: "tonexty", 
+			fillcolor: "rgba(68, 68, 68, 0.3)", 
+			//line: {color: "rgb(31, 119, 180)"}, 
+			mode: "lines", 
+			name: name,
+			type: "scatter",
+			legendgroup: 'group'+gd.i_group,
+			hoverinfo:'none'
+		});
+
 		Plotly.addTraces(gd,{
 			x: DG_time, 
 			y: data[2], 
@@ -478,6 +483,16 @@ function loadNewData(gd,data,name){
 			legendgroup: 'group'+gd.i_group,
 			hoverinfo:'none',
 		});
+	} else {
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data, 
+			mode: "lines", 
+			name: name,
+			type: "scatter",
+			legendgroup: 'group'+gd.i_group,
+			hoverinfo:'none'
+		});
 	}
 	gd.i_group+=1;
 }
@@ -486,13 +501,15 @@ function loadNewData(gd,data,name){
 
 
 
-function KMBFormatter(num) {
+function KMBFormatter2(num) {
 	if (num > 999999999 ){
 		num = (num/1000000000).toFixed(1) + 'B'
 	} else if (num > 999999 ){
 		num = (num/1000000).toFixed(1) + 'M'
 	} else if(num > 999){
-		num =(num/1000).toFixed(1) + 'K'
+		num = (num/1000).toFixed(1) + 'K'
+	} else {
+		num = num.toFixed(1)
 	}
 	return num
 }

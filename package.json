@@ -1,0 +1,32 @@
+{
+  "name": "bmm-web",
+  "version": "1.0.0",
+  "description": "Visualize result of Bird Migration Modeling",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rafnuss-PostDoc/BMM-web.git"
+  },
+  "keywords": [
+    "bird",
+    "model",
+    "leaflet"
+  ],
+  "author": "Raphaël Nussbaumer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rafnuss-PostDoc/BMM-web/issues"
+  },
+  "homepage": "https://github.com/Rafnuss-PostDoc/BMM-web#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "fs": "0.0.1-security",
+    "mangodb": "^1.0.0",
+    "mongodb": "^3.1.13",
+    "point-in-polygon": "^1.0.1"
+  }
+}
