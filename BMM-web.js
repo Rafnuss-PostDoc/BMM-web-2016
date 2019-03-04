@@ -1,15 +1,71 @@
-//var frame = [[41.3979, -4.4558], [65.8903, 44.6158]];
 var frame = [[43 , -5], [68, 30]];
-var pl
-var d3 = Plotly.d3;
-var DG_time;
-var drawn_density;
-d3colors = Plotly.d3.scale.category10();
-col=[]
-for (var i = 0; i < 11; i += 1) {
-	col.push(d3colors(i));
+function KMBFormatter(num) {
+	if (num > 999999999 ){
+		num = (num/1000000000).toFixed(1) + 'B'
+	} else if (num > 999999 ){
+		num = (num/1000000).toFixed(1) + 'M'
+	} else if(num > 999){
+		num = (num/1000).toFixed(1) + 'K'
+	} else {
+		num = num.toFixed(1)
+	}
+	return num
 }
 
+
+function loadNewData(gd,data,name){
+	if (data.length==3){
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data[1], 
+			line: {width: 0}, 
+			marker: {color: "444"}, 
+			mode: "lines", 
+			type: "scatter",
+			legendgroup: 'group'+gd.i_group,
+			showlegend:false,
+			hoverinfo:'none'
+		});
+
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data[0], 
+			fill: "tonexty", 
+			fillcolor: "rgba(68, 68, 68, 0.3)", 
+			//line: {color: "rgb(31, 119, 180)"}, 
+			mode: "lines", 
+			name: name,
+			type: "scatter",
+			legendgroup: 'group'+gd.i_group,
+			hoverinfo:'none'
+		});
+
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data[2], 
+			fill: "tonexty", 
+			fillcolor: "rgba(68, 68, 68, 0.3)", 
+			line: {width: 0}, 
+			marker: {color: "444"}, 
+			mode: "lines", 
+			type: "scatter",
+			showlegend:false,
+			legendgroup: 'group'+gd.i_group,
+			hoverinfo:'none',
+		});
+	} else {
+		Plotly.addTraces(gd,{
+			x: DG_time, 
+			y: data, 
+			mode: "lines", 
+			name: name,
+			type: "scatter",
+			legendgroup: 'group'+gd.i_group,
+			hoverinfo:'none'
+		});
+	}
+	gd.i_group+=1;
+}
 
 
 
@@ -17,6 +73,7 @@ L.MakiMarkers.accessToken = "pk.eyJ1IjoicmFmbnVzcyIsImEiOiIzMVE1dnc0In0.3FNMKIlQ
 
 
 jQuery(document).ready(function() {
+
 	map = L.map('mapid',{
 		timeDimension: true,
 		timeDimensionControl: true,
@@ -42,7 +99,7 @@ jQuery(document).ready(function() {
 	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 		maxZoom: 18,
-		id: 'mapbox.streets',
+		id: 'mapbox.run-bike-hike',
 		accessToken: 'pk.eyJ1IjoicmFmbnVzcyIsImEiOiIzMVE1dnc0In0.3FNMKIlQ_afYktqki-6m0g'
 	}).addTo(map);
 
@@ -50,25 +107,25 @@ jQuery(document).ready(function() {
 	var folderDens = "Density_estimationMap_ImageOverlay/";
 	var folderFlight = "Quiver_est/";
 	var zoom='';//'_4/';
-	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/mask_day_3857.png",frame,{opacity:0.5}).addTo(map);
-	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/"+folderDens+"0000-00-00-00-00_3857.png",frame,{opacity:0.9}).addTo(map);
-	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/"+folderFlight+zoom+"0000-00-00-00-00_3857.png",frame,{opacity:0.9});//.addTo(map);
-	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/rain/0000-00-00-00-00_3857.png",frame,{opacity:0.8}).addTo(map);
+	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/mask_day_3857.webp",frame,{opacity:0.5}).addTo(map);
+	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9}).addTo(map);
+	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9});//.addTo(map);
+	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.8}).addTo(map);
 
 
 	ImageTimeLayerDens = L.timeDimension.layer.imageOverlay(imageLayerDens, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("data/") + 5);
-			return beginUrl + folderDens + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
+			var beginUrl = "https://bmm.raphaelnussbaumer.com/data/"+folderDens;
+			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
 
 	ImageTimeLayerFlight = L.timeDimension.layer.imageOverlay(imageLayerFlight, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("data/") + 5);
-			return beginUrl + folderFlight + zoom + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
+			var beginUrl = "https://bmm.raphaelnussbaumer.com/data/"+folderFlight;
+			return beginUrl + zoom + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
 
@@ -83,8 +140,8 @@ jQuery(document).ready(function() {
 	ImageTimeLayerRain = L.timeDimension.layer.imageOverlay(imageLayerRain, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = baseUrl.substring(0, baseUrl.lastIndexOf("rain/") + 5);
-			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.png';
+			var beginUrl = "https://bmm.raphaelnussbaumer.com/data/rain/";
+			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
 
@@ -138,10 +195,9 @@ jQuery(document).ready(function() {
 		var div = L.DomUtil.create('div', 'info legend');
 		div.innerHTML = '<div class="form-group" id="select-map">\
 		<select class="form-control" id="sel1">\
-		<option value=\'{\"folderDens\":\"Density_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est\",\"minval\":\"-2\",\"maxval\":\"5\",\"titleval\":\"Bird Density [Log bird/km<sup>2</sup>]\"}\'>Estimation</option>\
-		<option disable value=\'{\"folderDens\":\"Density_simulationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_sim\",\"minval\":\"-5\",\"maxval\":\"5\",\"titleval\":\"Bird Density [Log bird/km<sup>2</sup>]\"}\' >Simulation</option>\
-		<option disable value=\'{\"folderDens\":\"SinkSource_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est\",\"minval\":\"-10\",\"maxval\":\"10\",\"titleval\":\"Bird Density [bird/km<sup>2</sup>/15min]\"}\'>Sink/Source</option>\
-		<option value=\'{\"folderDens\":\"MTR_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est\",\"minval\":\"0\",\"maxval\":\"3000\",\"titleval\":\"Mean Traffic Rate (MTR) [bird/km/hr]\"}\'>Mean Traffic Rate (MTR)</option>\
+		<option value=\'{\"folderDens\":\"Density_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est/\",\"minval\":\"0\",\"maxval\":\"2\",\"titleval\":\"Bird Density [Log bird/km<sup>2</sup>]\"}\'>Estimation</option>\
+		<option disable value=\'{\"folderDens\":\"Density_simulationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est/\",\"minval\":\"0\",\"maxval\":\"3\",\"titleval\":\"Bird Density [Log bird/km<sup>2</sup>]\"}\' >Simulation</option>\
+		<option disable value=\'{\"folderDens\":\"SinkSource_estimationMap_ImageOverlay/\",\"folderFlight\":\"Quiver_est/\",\"minval\":\"-10\",\"maxval\":\"10\",\"titleval\":\"Bird Density [bird/km<sup>2</sup>/15min]\"}\'>Sink/Source</option>\
 		</select>\
 		</div>';
 
@@ -150,7 +206,7 @@ jQuery(document).ready(function() {
 		div.innerHTML += '<div id="canvas-div" class="form-control">\
 		<p id="canvas-title">Bird Density [Log bird/km<sup>2</sup>]</p>\
 		<canvas id="canvas" width="247" height="20" ></canvas>\
-		<p id="canvas-range"><span id="canvas-min">-2</span><span id="canvas-max">5</span></p>\
+		<p id="canvas-range"><span id="canvas-min">0</span><span id="canvas-max">2</span></p>\
 		</div>';
 
 		div.innerHTML += '<div class="form-control container-fluid" id="layer-div"><div class="row">'+
@@ -229,6 +285,19 @@ jQuery(document).ready(function() {
 	ctx.fillStyle = "#4D4DFF";
 	ctx.fillRect(0,0,30,20);
 
+});
+
+
+
+jQuery(window).bind("load", function() {
+	/* PLOT*/
+
+	d3colors = Plotly.d3.scale.category10();
+	col=[]
+	for (var i = 0; i < 11; i += 1) {
+		col.push(d3colors(i));
+	}
+
 
 	gd_style ={
 		width: '100%',
@@ -238,9 +307,9 @@ jQuery(document).ready(function() {
 		'margin-top': '0px'
 	};
 
-	gd_density = d3.select('#plot_density').style(gd_style).node();
-	gd_sum = d3.select('#plot_sum').style(gd_style).node();
-	gd_mtr = d3.select('#plot_mtr').style(gd_style).node();
+	gd_density = Plotly.d3.select('#plot_density').style(gd_style).node();
+	gd_sum = Plotly.d3.select('#plot_sum').style(gd_style).node();
+	gd_mtr = Plotly.d3.select('#plot_mtr').style(gd_style).node();
 	gd_density.i_group=0;
 	gd_sum.i_group=0;
 	gd_mtr.i_group=1;
@@ -443,76 +512,7 @@ jQuery(document).ready(function() {
 
 
 
-function loadNewData(gd,data,name){
-	if (data.length==3){
-		Plotly.addTraces(gd,{
-			x: DG_time, 
-			y: data[1], 
-			line: {width: 0}, 
-			marker: {color: "444"}, 
-			mode: "lines", 
-			type: "scatter",
-			legendgroup: 'group'+gd.i_group,
-			showlegend:false,
-			hoverinfo:'none'
-		});
 
-		Plotly.addTraces(gd,{
-			x: DG_time, 
-			y: data[0], 
-			fill: "tonexty", 
-			fillcolor: "rgba(68, 68, 68, 0.3)", 
-			//line: {color: "rgb(31, 119, 180)"}, 
-			mode: "lines", 
-			name: name,
-			type: "scatter",
-			legendgroup: 'group'+gd.i_group,
-			hoverinfo:'none'
-		});
-
-		Plotly.addTraces(gd,{
-			x: DG_time, 
-			y: data[2], 
-			fill: "tonexty", 
-			fillcolor: "rgba(68, 68, 68, 0.3)", 
-			line: {width: 0}, 
-			marker: {color: "444"}, 
-			mode: "lines", 
-			type: "scatter",
-			showlegend:false,
-			legendgroup: 'group'+gd.i_group,
-			hoverinfo:'none',
-		});
-	} else {
-		Plotly.addTraces(gd,{
-			x: DG_time, 
-			y: data, 
-			mode: "lines", 
-			name: name,
-			type: "scatter",
-			legendgroup: 'group'+gd.i_group,
-			hoverinfo:'none'
-		});
-	}
-	gd.i_group+=1;
-}
-
-
-
-
-
-function KMBFormatter2(num) {
-	if (num > 999999999 ){
-		num = (num/1000000000).toFixed(1) + 'B'
-	} else if (num > 999999 ){
-		num = (num/1000000).toFixed(1) + 'M'
-	} else if(num > 999){
-		num = (num/1000).toFixed(1) + 'K'
-	} else {
-		num = num.toFixed(1)
-	}
-	return num
-}
 
 
 
