@@ -310,23 +310,13 @@ jQuery(window).bind("load", function() {
 	gd_density = Plotly.d3.select('#plot_density').style(gd_style).node();
 	gd_sum = Plotly.d3.select('#plot_sum').style(gd_style).node();
 	gd_mtr = Plotly.d3.select('#plot_mtr').style(gd_style).node();
-	gd_density.i_group=0;
-	gd_sum.i_group=0;
+	gd_density.i_group=1;
+	gd_sum.i_group=1;
 	gd_mtr.i_group=1;
 
 	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/data/exportGrid_time.json",function(data){
 		
 		DG_time=data[0];
-
-		var traceDate = {
-			type: "scatter",
-			name: 'Time',
-			x: [ DG_time[0], DG_time[0] ],
-			y: [0, 100],
-			line: {color: '#7F7F7F'},
-			showlegend:false,
-			hoverinfo:'none',
-		};
 
 		var layout = {
 			autosize:true,
@@ -365,21 +355,33 @@ jQuery(window).bind("load", function() {
 				autorange: true,
 				//range: [Math.min(...DG_all.est), Math.max(...DG_all.est)],
 				type: 'linear',
-			}
+			},
+			shapes: [  {
+				type: "line",
+				x0: DG_time[0],
+				x1: DG_time[0],
+				y0: 0,
+				y1: 1,
+				yref: "paper",
+				line: {
+					color: '#7F7F7F',
+					width: 2,
+					dash: 'dot'
+				},
+			}]
 		};
 
-		Plotly.newPlot(gd_density, [traceDate], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
-		Plotly.newPlot(gd_sum, [traceDate], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
-		Plotly.newPlot(gd_mtr, [traceDate], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
+		Plotly.newPlot(gd_density, [], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
+		Plotly.newPlot(gd_sum, [], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
+		Plotly.newPlot(gd_mtr, [], layout,  {modeBarButtonsToRemove: ['toImage','sendDataToCloud','hoverCompareCartesian','hoverClosestCartesian','hoverCompareCartesian','resetScale2d','zoomIn2d','zoomOut2d']});
 
 		// Update figure with time
 		map.timeDimension.on('timeload', function(data) {
 			var date = new Date(map.timeDimension.getCurrentTime());
 			date_str = date.toISOString().replace('T',' ').slice(0,16);
-			Plotly.restyle(gd_density, {x: [[date_str, date_str]]} ,0)
-			Plotly.restyle(gd_sum, {x: [[date_str, date_str]]} ,0)
-			Plotly.restyle(gd_mtr, {x: [[date_str, date_str]]} ,0)
-			//gd.data[0].x=[date_str, date_str];
+			Plotly.relayout(gd_density, {'shapes[0].x0':date_str,'shapes[0].x1':date_str})
+			Plotly.relayout(gd_sum, {'shapes[0].x0':date_str,'shapes[0].x1':date_str})
+			Plotly.relayout(gd_mtr, {'shapes[0].x0':date_str,'shapes[0].x1':date_str})
 		});
 
 		setTimeout(function (){
@@ -467,29 +469,51 @@ jQuery(window).bind("load", function() {
 
 	map.on(L.Draw.Event.CREATED, function (e) {
 		if ( e.layerType === 'marker') {
-			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/marker_density/' + e.layer._latlng.lat +','+e.layer._latlng.lng, function(data){
-				e.layer.setIcon(L.MakiMarkers.icon({icon: "circle-stroked", color: col[(gd_density.i_group*3)%10], size: "m"}));
-				name = Math.round(e.layer._latlng.lat/2)*2+"°N "+Math.round(e.layer._latlng.lng/2)*2+"°NE";
-				loadNewData(gd_density,[data.density.est,data.density.q10,data.density.q90],name)
+			var link = 'https://bmm.raphaelnussbaumer.com/api/marker_density/' + e.layer._latlng.lat +','+e.layer._latlng.lng;
+			jQuery.getJSON(link, function(data){
+				if (data.length < 1) {
+					alert('No data for this location (Try closer to existing data =)')
+					map.removeLayer(e.layer);
+				} else {					
+					e.layer.setIcon(L.MakiMarkers.icon({icon: "circle-stroked", color: col[(gd_density.i_group*3-4)%10], size: "m"}));
+					name = Math.round(e.layer._latlng.lat/2)*2+"°N "+Math.round(e.layer._latlng.lng/2)*2+"°NE";
+					loadNewData(gd_density,[data.density.est,data.density.q10,data.density.q90],name)					
+				}
 			})
+
 		} else if ( e.layerType === 'polygon') {
-			polyPoints = e.layer.getLatLngs();
+			var polyPoints = e.layer.getLatLngs();
 			var pts_string = polyPoints[0].map( (e) => e.lat+","+e.lng).join('/');
-			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polygon_sum/'+pts_string , function(data){
-				e.layer.setStyle({fillColor: col[(gd_sum.i_group+1)%10], color:col[(gd_sum.i_group+1)%10]});
-				name = "Polygon ("+KMBFormatter(data[1])+' km<sup>2</sup>)';
-				loadNewData(gd_sum,data[0],name)
+			var link = 'https://bmm.raphaelnussbaumer.com/api/polygon_sum/'+pts_string
+			jQuery.getJSON( link , function(data){
+				if (data[0].length < 1) {
+					alert('No data for this polygon (Try overlaping to existing data =)')
+					map.removeLayer(e.layer);
+				} else {
+					e.layer.setStyle({fillColor: col[(gd_sum.i_group-1)%10], color:col[(gd_sum.i_group-1)%10]});
+					name = "Polygon ("+KMBFormatter(data[1])+' km<sup>2</sup>)';
+					loadNewData(gd_sum,data[0],name)
+				}
 			})
+
 		} else if ( e.layerType === 'polyline') {
-			polyPoints = e.layer.getLatLngs();
+			var polyPoints = e.layer.getLatLngs();
 			var pts_string = polyPoints.map( (e) => e.lat+","+e.lng).join('/');
-			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/api/polyline_mtr/' + pts_string, function(data){
-				e.layer.setStyle({fillColor: col[(2+gd_mtr.i_group*3)%10], color:col[(gd_mtr.i_group*3-1)%10]});
-				name = "Polyline ("+KMBFormatter(data[1])+' km)';
-				loadNewData(gd_mtr,data[0],name)
+			var link = 'https://bmm.raphaelnussbaumer.com/api/polyline_mtr/' + pts_string;
+			jQuery.getJSON(link, function(data){
+				if (data[0].length < 1) {
+					alert('No data for this polyline (Try closer to existing data =)')
+					map.removeLayer(e.layer);
+				} else {
+					e.layer.setStyle({fillColor: col[(2+gd_mtr.i_group-1)%10], color:col[(gd_mtr.i_group-1)%10]});
+					name = "Polyline ("+KMBFormatter(data[1])+' km)';
+					loadNewData(gd_mtr,data[0],name)
+				}
 			})
 		}
+		e.layer.bindPopup('<a class="btn btn-success" href="'+link+'" target="_blank" download style="color:white;"><i class="fas fa-download"></i> Downolad data </a><br><a class="btn btn-defaul" style="color:black;" href="https://github.com/Rafnuss-PostDoc/BMM-web#how-to-use-the-api" target="_blank"><i class="fas fa-info-circle"></i> More info </a>')
 		drawn.addLayer(e.layer);
+		e.layer.openPopup();
 	});
 
 	map.on('draw:drawvertex', e => {

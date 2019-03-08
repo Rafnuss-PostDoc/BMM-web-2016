@@ -51,7 +51,7 @@ var findNearest =function(latlng){
 	var acc = DG_grid.reduce(function(acc, curr, id_curr) {
 		val = Math.pow((DG_grid[id_curr][0] - latlng[0]),2) + Math.pow((DG_grid[id_curr][1] - latlng[1]),2);
 		return val < acc[0] ? [val, id_curr] : acc;
-	});
+	},[20,-1]);
 	return acc[1]
 }
 
@@ -87,12 +87,18 @@ app.get('/:type/:pts(*)', function (req, res) {
 		if (err) throw err;
 		if (req.params.type == 'marker_density'){
 			var id = findNearest(pts[0])
-			col = client.db("bmm").collection('data');
-			col.findOne({'_id': id}, function(err, result) {
-				if (err) throw err;
-				res.json(result);
+			if (id==-1){
+				res.json([]);
 				client.close();
-			});
+			} else {
+				col = client.db("bmm").collection('data');
+				col.findOne({'_id': id}, function(err, result) {
+					if (err) throw err;
+					res.json(result);
+					client.close();
+				});				
+			}
+
 
 
 		} else if (req.params.type == 'polygon_sum'){
@@ -110,11 +116,16 @@ app.get('/:type/:pts(*)', function (req, res) {
 			var nb = insidepts.length;
 			client.db("bmm").collection('data').find({'_id': {$in: insidepts}},{ projection: { u: 0, v: 0 } }).toArray(function(err, result) {
 				if (err) throw err;
-				result = result.map( (e) => e.density.est.map( (ed) => ed*DG_grid[e._id][2] ) )
-				result= result.reduce( (acc,e) => e.map( (ed,id) => ed+acc[id] ) )
-				result = result.map( (e) => +e.toFixed(2))
-				res.json([result, area]);
-				client.close();
+				if (result.length==0){
+					res.json([[], 0]);
+					client.close();
+				} else {
+					result = result.map( (e) => e.density.est.map( (ed) => ed*DG_grid[e._id][2] ) )
+					result= result.reduce( (acc,e) => e.map( (ed,id) => ed+acc[id] ) )
+					result = result.map( (e) => +e.toFixed(2))
+					res.json([result, area]);
+					client.close();
+				}
 			});
 
 		} else if ( req.params.type == 'polyline_mtr' ){
@@ -132,25 +143,30 @@ app.get('/:type/:pts(*)', function (req, res) {
 			for (var i = 0; i < (nb_pt-1); i++) {
 				nearest.push(findNearest([pts[0][0]+i*dlat, pts[0][1]+i*dlng]))
 			}
-
 			nearest.push(findNearest([pts[1][0], pts[1][1]]))
-
-			console.log(direction_vector)
+			nearest.filter(pts => pts > -1)
 
 			client.db("bmm").collection('data').find({'_id': {$in: nearest}}).toArray(function(err, result) {
 				if (err) throw err;
-				var mtr = result.map(r => r.u.map( (tmp,id) => r.density.est[id]*dotproduct([r.u[id],r.v[id]], direction_vector) ) )
 
-				var mtr_list = [];
-				nearest.forEach(function(n){
-					var i = result.findIndex(x => x._id == n)
-					mtr_list.push(mtr[i])
-				})
+				if (result.length==0){
+					res.json([[], 0]);
+					client.close();
+				} else {
+					var mtr = result.map(r => r.u.map( (tmp,id) => r.density.est[id]*dotproduct([r.u[id],r.v[id]], direction_vector) ) )
+				
+					var mtr_list = [];
+					nearest.forEach(function(n){
+						var i = result.findIndex(x => x._id == n)
+						mtr_list.push(mtr[i])
+					})
 
-				result= mtr_list.reduce( (acc,e) => e.map( (ed,id) => ed+acc[id] ) )
-				result = result.map( (e) => +e.toFixed(2))
-				res.json([result, dist]);
-				client.close();
+
+					result= mtr_list.reduce( (acc,e) => e.map( (ed,id) => ed+acc[id] ) )
+					result = result.map( (e) => +e.toFixed(2))
+					res.json([result, dist]);
+					client.close();
+				}
 			})
 		}
 
