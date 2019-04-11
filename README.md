@@ -1,18 +1,28 @@
 # BMM-web
 
-Website to visualize the result of [BMM](https://rafnuss-postdoc.github.io/BMM/).
-
-## Demo
-[See demo on bmm.raphaelnussbaumer.com](https://bmm.raphaelnussbaumer.com/).
+This code is for building the [website (bmm.raphaelnussbaumer.com)](https://bmm.raphaelnussbaumer.com/) used to visualize the result of [BMM](https://rafnuss-postdoc.github.io/BMM/).
 
 ## Description
-The map displays 3 layers: the bird density with a colorbar, the rain with a blue mask and the bird flight speed and direction as quiver. These layers are animated with the time control on the bottom of the screen which allows for pausing, changing the speed, moving a fram at the time and move foward or backward with a slider. In addition, 3 timeseries are available (collaped by default) on the bottom of the screen, just above the timecontrol. The first one displays the bird density at a single location, the second the sum of all bird present in an area and the third the mean bird traffic (MTR) perpendicular to a transect. For each of them, a drawing button positined on the right of the time series allows to query on the map the corresponding point, area or line. 
-
 <img src="description.png">
 
+### Layers
+The map can displays the following layers: 
+* the rain as a blue mask (turn on/off with checkbox). 
+* bird flight speed and direction as arrow (turn on/off with checkbox). 
+* the bird density with as colored map.
 
-Using leaflet to displays the various layer on the map, Leaflet.TimeDimension to control the time. Layer are basic image store on the server and calby Leaflet.TimeDimension. The time series on the bottom allow to visualized the density at a point, the sum of bird over a polygon, or the MTR over a transect. The data are served by Nodejs using Mongodb to store the data. 
+These layers are animated with the time control on the bottom of the screen which allows for pausing, changing the speed, or moving a frame at the time. 
 
+### Timeseries
+In addition, 3 timeseries are available (collaped by default) on the bottom of the screen, just above the timecontrol. 
+* The first one displays the bird density at a single location, 
+* The second the sum of all bird present in an area 
+* The third the mean bird traffic (MTR) perpendicular to a transect. 
+
+For each of them, a drawing button positined on the right of the time series allows to query on the map the corresponding point, area or line. 
+
+## Packaged used
+[leaflet](https://leafletjs.com/) is used manage the map and various layer, [Leaflet.TimeDimension](https://github.com/socib/Leaflet.TimeDimension) controls the time and interaction with the layer. The data query on the time series are served by [Nodejs](https://nodejs.org/) and stoed by [Mongodb](https://www.mongodb.com/). 
 
 
 ## How to use the API
