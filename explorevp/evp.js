@@ -40,9 +40,9 @@ function UpdateFigure(radar){
 				count: 1,
 				label: '1d'
 			},{
-				step: 'week',
+				step: 'day',
 				stepmode: 'backward',
-				count: 1,
+				count: 7,
 				label: '1w'
 			},{
 				step: 'month',
