@@ -3,7 +3,7 @@ This repository store the code and dataset for building the website [bmm.raphael
 
 ## Demo
 
-<img src="https://bmm.raphaelnussbaumer.com/BMM-web.gif">
+<img src="BMM-web.gif">
 
 ## Description
 <img src="FigureS5-1.png">
