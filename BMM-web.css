@@ -99,6 +99,9 @@ html, body, #wrapper, #main, .fusion-row, #content, .page, .post-content, #yourF
 #canvas-max{
 	float: right;
 }
+#intro-div{
+	height: fit-content;
+}
 #learnmore-div{
 	height: fit-content;
 	display: flex;
@@ -110,6 +113,13 @@ html, body, #wrapper, #main, .fusion-row, #content, .page, .post-content, #yourF
 }
 #mapid > div.leaflet-control-container > div.leaflet-top.leaflet-right{
 	max-width:247px;
+}
+#mapid > div.leaflet-control-container > div.leaflet-top.leaflet-left > div.leaflet-control-zoom.leaflet-bar.leaflet-control{
+	left:347px;
+	position: absolute;
+}
+#mapid > div.leaflet-control-container > div.leaflet-top.leaflet-left{
+	max-width:347px;
 }
 #mapid > div.leaflet-control-container > div.leaflet-bottom.leaflet-left > div.leaflet-bar.leaflet-bar-horizontal.leaflet-bar-timecontrol.leaflet-control{
 	z-index: 0;
@@ -185,5 +195,65 @@ a[aria-expanded=false] .fa-chevron-down {
 	border: none !important;
 }
 .nav-tabs .nav-link{
-	background: rgba(233, 236, 239,0.8);
+    background: white;
+    border-color: #dee2e6;
+    font-size: initial;
+}
+.nav-tabs .nav-link:hover{
+	background-color: #f4f4f4;
+	color: #777;
+}  
+ .nav-tabs .nav-link.active{
+	background-color: white;
+	color: #777;
+}    
+#myTabContent{
+	background: white;
+}
+#alert-bar{
+	position: absolute;
+    z-index: 314159;
+    top: 10px;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+.checkbox-inline{
+	padding-right: 50px;
+}
+#tt-nb-div{
+	margin-bottom: 0.5rem;
+	height: auto;
+	    position: relative;
+}
+.night{
+	background: #495057;
+	color: #F7F5C5;
+	transition: background-color .4s ease;
+	fill: #F7F5C5;
+}
+.day{
+	background: #F7F5C5;
+	color: #495057;
+	transition: background-color .4s ease;
+	fill: #495057;
+}
+#tt-sun{
+	position: absolute;
+    right: 10px;
+    top: 10px;
+}
+.modal-content{
+	max-width: 1000px !important;
+}
+#instruction-img{
+	max-width: 600px;
+}
+.leaflet-popup-content{
+	margin: 0;
+}
+.modal-title{
+	margin: auto;
+}
+.modal-header{
+	padding: 6px;
 }

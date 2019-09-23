@@ -17,22 +17,22 @@ var r
 
 
 var est_grid, sim_grid, sim_time;
-fs.readFile('data/exportEst_grid.json', function(err, content){
+fs.readFile('data/API/exportEst_grid.json', function(err, content){
 	data = JSON.parse(content);
 	est_grid = data;
 	console.log('exportEst_grid.json loaded')
 });
-fs.readFile('data/exportEst_time.json', function(err, content){
+fs.readFile('data/API/exportEst_time.json', function(err, content){
 	data = JSON.parse(content);
 	est_time = data;
 	console.log('exportEst_time.json loaded')
 });
-fs.readFile('data/exportSim_grid.json', function(err, content){
+fs.readFile('data/API/exportSim_grid.json', function(err, content){
 	data = JSON.parse(content);
 	sim_grid = data;
 	console.log('exportSim_grid.json loaded')
 });
-fs.readFile('data/exportSim_time.json', function(err, content){
+fs.readFile('data/API/exportSim_time.json', function(err, content){
 	data = JSON.parse(content);
 	sim_time = data;
 	console.log('exportSim_time.json loaded')
