@@ -134,7 +134,7 @@ jQuery(document).ready(function() {
 		div.innerHTML = '<div id="intro-div" class="form-control">'+
 		'<h5>Welcome!</h5>'+
 		'<p>This interactive map displays the nocturnal bird migration of Autumn 2016 based on data from the European network of weather radars.</p>'+
-		'<p>This map was generated using a novel geostatistical model presented in a scientific paper (<a href=" https://doi.org/10.3390/rsxx010005"><i class="ai ai-doi"></i>/10.3390/rsxx010005</a>).</p>'+
+		'<p>This map was generated using a novel geostatistical model presented in a scientific paper (<a href="https://doi.org/10.3390/rs11192233"><i class="ai ai-doi"></i>/10.3390/rs11192233</a>).</p>'+
 		'<p>Explore time series of bird densities for specific locations using the tabs below, or check <a id="modal" href="#" onclick="return false;">the more detailed instructions <i class="fas fa-info-circle"></i></a>\.</p>';
 		div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
 		return div
