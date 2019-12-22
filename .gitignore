@@ -1,5 +1,7 @@
 package-lock.json
 package.json
 node_modules/*
-inventory.crud.js
+inventory.crud.json
 *.bin
+*.gz
+API/*
