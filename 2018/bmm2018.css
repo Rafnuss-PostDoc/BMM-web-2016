@@ -28,25 +28,27 @@
   border-radius: 50%;
 }
 .mapboxgl-ctrl-bottom-left{
-	bottom: 60px;
+	/*bottom: 60px;*/
+      z-index: auto;
 }
 .mapboxgl-ctrl-bottom-right{
-	bottom: 60px;
+	/*bottom: 60px;*/
+      z-index: auto;
 }
 .bar{
   display:none;
   cursor: pointer;
 }
 input[name='radio-bar']{
-    display:none;
+  display:none;
 }
 input[name='radio-bar']:checked + div.bar{
-    display:block !important;
+  display:block !important;
 }
-#neeButton.active{
+.btna.active{
   background-color: #01aa46!important;
 }
-#neeButton.active > i{
+.btna.active > i{
   color: white !important;
 }
 
@@ -108,6 +110,41 @@ input[name='radio-bar']:checked + div.bar{
 }
 #tt-sun{
   position: absolute;
-    right: 10px;
-    top: 10px;
+  right: 10px;
+  top: 10px;
 }
+
+
+
+/* TAB*/
+#tablinks-div{
+ left: 50%;
+ margin-left:-103px;
+ margin-top: 5px;
+ z-index: 1;
+}
+
+.tablinks {
+  transition: 0.3s;
+}
+.tabcontent {
+  /*padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;*/
+  height: 100%;
+}
+
+
+
+
+
+
+
+.caxis{
+  display: inline;
+}
+.fa-stopwatch{
+  margin: 4px 0px 5px 0px;
+  padding-right: 6px;
+}
+
