@@ -4,4 +4,4 @@ node_modules/*
 inventory.crud.json
 *.bin
 *.gz
-API/*
+data/API/*
