@@ -46,16 +46,16 @@ jQuery(document).ready(function() {
 	var folderDens = "Density_estimationMap_ImageOverlay/";
 	var folderFlight = "Quiver_est/";
 	var zoom='';//'_4/';
-	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/mask_day_3857.webp",frame,{opacity:0.5}).addTo(map);
-	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9}).addTo(map);
-	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9});//.addTo(map);
-	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.8}).addTo(map);
+	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/mask_day_3857.webp",frame,{opacity:0.5}).addTo(map);
+	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9}).addTo(map);
+	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9});//.addTo(map);
+	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.8}).addTo(map);
 
 
 	ImageTimeLayerDens = L.timeDimension.layer.imageOverlay(imageLayerDens, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = "https://bmm.raphaelnussbaumer.com/data/"+folderDens;
+			var beginUrl = "https://bmm.raphaelnussbaumer.com/2016/data/"+folderDens;
 			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
@@ -63,7 +63,7 @@ jQuery(document).ready(function() {
 	ImageTimeLayerFlight = L.timeDimension.layer.imageOverlay(imageLayerFlight, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = "https://bmm.raphaelnussbaumer.com/data/"+folderFlight;
+			var beginUrl = "https://bmm.raphaelnussbaumer.com/2016/data/"+folderFlight;
 			return beginUrl + zoom + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
@@ -79,7 +79,7 @@ jQuery(document).ready(function() {
 	ImageTimeLayerRain = L.timeDimension.layer.imageOverlay(imageLayerRain, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = "https://bmm.raphaelnussbaumer.com/data/rain/";
+			var beginUrl = "https://bmm.raphaelnussbaumer.com/2016/data/rain/";
 			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
@@ -461,10 +461,10 @@ jQuery(document).ready(function() {
 	gd_sum.i_group=1;
 	gd_mtr.i_group=1;
 
-	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/data/API/exportEst_time.json",function(data){
+	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/2016/data/API/exportEst_time.json",function(data){
 		est_time=data[0];
 
-		jQuery.getJSON("https://bmm.raphaelnussbaumer.com/data/API/exportSim_time.json",function(data){
+		jQuery.getJSON("https://bmm.raphaelnussbaumer.com/2016/data/API/exportSim_time.json",function(data){
 
 			sim_time=data[0];
 			sim_time_d = sim_time.map(x=> new Date(x));
@@ -563,7 +563,7 @@ jQuery(document).ready(function() {
 			}, 2000);
 
 
-			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/data/API/global.json', function(data){
+			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/2016/data/API/global.json', function(data){
 				var name = "Total Sum ("+KMBFormatter(data.area)+' km<sup>2</sup>)';
 				loadNewData(gd_sum,[data.avg,data.min,data.max],sim_time,name)
 
