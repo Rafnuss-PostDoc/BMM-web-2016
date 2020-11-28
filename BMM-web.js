@@ -35,10 +35,9 @@ jQuery(document).ready(function() {
 
 	map.timeDimensionControl._dateUTC=false;
 	
-	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+	L.tileLayer.provider('MapBox', {
 		maxZoom: 18,
-		id: 'mapbox.run-bike-hike',
+		id: 'mapbox/outdoors-v11',
 		accessToken: 'pk.eyJ1IjoicmFmbnVzcyIsImEiOiIzMVE1dnc0In0.3FNMKIlQ_afYktqki-6m0g'
 	}).addTo(map);
 
