@@ -1,5 +1,8 @@
-# BMM-web
-This repository store the code and dataset for building the website [bmm.raphaelnussbaumer.com](https://bmm.raphaelnussbaumer.com/) used to visualize the result of the interpolation of migrant bird density measured by a weather radar network [BMM](https://rafnuss-postdoc.github.io/BMM/).
+:warning: Project archieved! Current version on [Rafnuss-PostDoc/BMM-website/](https://github.com/Rafnuss-PostDoc/BMM-website/tree/master/2016)  :warning:
+
+# BMM-web-2016
+
+This repository store the code and dataset for building the website [bmm.raphaelnussbaumer.com/2016](https://bmm.raphaelnussbaumer.com/2016) used to visualize the result of the interpolation of migrant bird density measured by a weather radar network [BMM](https://rafnuss-postdoc.github.io/BMM/).
 
 ## Demo
 
@@ -79,5 +82,5 @@ https://bmm.raphaelnussbaumer.com/api/polyline_mtr/48.980216985374994,1.14257812
 
 ## Download data
 - The raw data used in this study are found on the repository of [European Network for the Radar surveillance of Animal Movement (ENRAM)](http://enram.github.io/data-repository/) and were generated with [vol2bird](https://github.com/adokter/vol2bird).
-- These data were cleaned manually into vertical profile of reflectivity. These data are available on zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3243397.svg)](https://doi.org/10.5281/zenodo.3243397)
-- The final interpolated spatio-temporal map can also be downloaded from zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3243397.svg)](https://doi.org/10.5281/zenodo.3243397).
+- These data were cleaned manually into vertical profile of reflectivity. These data are available on zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3243396.svg)](https://doi.org/10.5281/zenodo.3243396)
+- The final interpolated spatio-temporal map can also be downloaded from zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3243465.svg)](https://doi.org/10.5281/zenodo.3243465).
