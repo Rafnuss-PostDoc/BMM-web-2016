@@ -7,10 +7,10 @@ jQuery(document).ready(function() {
 	var isFirefox = typeof InstallTrigger !== 'undefined';
 
 	if( !(isChrome || isFirefox) ) {
-		jQuery('body').append('<div class="alert alert-warning" id="alert-bar">'+
-			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
-			'<strong>Warning!</strong> Your browser might not be compatible. We recommend using <a href="https://www.google.com/chrome/">Chrome</a>.'+
-			'</div>');
+		jQuery('body').append(`<div class="alert alert-warning" id="alert-bar">
+			<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Warning!</strong> Your browser might not be compatible. We recommend using <a href="https://www.google.com/chrome/">Chrome</a>.
+			</div>`);
 	}
 
 	map = L.map('mapid',{
@@ -45,16 +45,16 @@ jQuery(document).ready(function() {
 	var folderDens = "Density_estimationMap_ImageOverlay/";
 	var folderFlight = "Quiver_est/";
 	var zoom='';//'_4/';
-	//imageLayerDay = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/mask_day_3857.webp",frame,{opacity:0.5}).addTo(map);
-	imageLayerDens = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9}).addTo(map);
-	imageLayerFlight = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9});//.addTo(map);
-	imageLayerRain = L.imageOverlay("https://bmm.raphaelnussbaumer.com/2016/data/0000-00-00-00-00_3857.webp",frame,{opacity:0.8}).addTo(map);
+	//imageLayerDay = L.imageOverlay("./data/mask_day_3857.webp",frame,{opacity:0.5}).addTo(map);
+	imageLayerDens = L.imageOverlay("./data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9}).addTo(map);
+	imageLayerFlight = L.imageOverlay("./data/0000-00-00-00-00_3857.webp",frame,{opacity:0.9});//.addTo(map);
+	imageLayerRain = L.imageOverlay("./data/0000-00-00-00-00_3857.webp",frame,{opacity:0.8}).addTo(map);
 
 
 	ImageTimeLayerDens = L.timeDimension.layer.imageOverlay(imageLayerDens, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = "https://bmm.raphaelnussbaumer.com/2016/data/"+folderDens;
+			var beginUrl = "./data/"+folderDens;
 			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
@@ -62,7 +62,7 @@ jQuery(document).ready(function() {
 	ImageTimeLayerFlight = L.timeDimension.layer.imageOverlay(imageLayerFlight, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = "https://bmm.raphaelnussbaumer.com/2016/data/"+folderFlight;
+			var beginUrl = "./data/"+folderFlight;
 			return beginUrl + zoom + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
@@ -78,7 +78,7 @@ jQuery(document).ready(function() {
 	ImageTimeLayerRain = L.timeDimension.layer.imageOverlay(imageLayerRain, {
 		getUrlFunction: function(baseUrl, time) {
 			var t = new Date(time);//-1000*60*60*2);
-			var beginUrl = "https://bmm.raphaelnussbaumer.com/2016/data/rain/";
+			var beginUrl = "./data/rain/";
 			return beginUrl + t.getFullYear() + '-' + ('0' + (t.getMonth()+1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2)  + '-' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) +'_3857.webp';
 		}
 	}).addTo(map);
@@ -285,24 +285,68 @@ jQuery(document).ready(function() {
 	jQuery('#modal').on('click',function(){
 		map.fire('modal', {
 			content: '<h2>Instructions</h2>'+
-			'<img id="instruction-img" src="https://github.com/Rafnuss-PostDoc/BMM-web/raw/master/FigureS5-1.png">'+
-			'<h5>Block 1: Interactive map</h5>'+
-			'<p>The main block of the website is a map with interactive visualization tools (e.g. zoom and pan). On top of this map, three layers can be displayed:</p>'+ 
-			'<ul><li>The first layer illustrates bird densities in a log-color scale. This layer can display either the estimation map or a single simulation map. Users can choose using the drop-down menu (1a).</li>'+
-			'<li>The second layer displays the rain in light blue. The layer can be hidden/displayed using the checkbox (1b).</li>'+
-			'<li>The third layer corresponds to bird flight speed and direction, visualized by black arrows. The checkbox (1c) allows users to display/hide this layer. </li></ul>'+
-			'<p>Finally, the menu (1d) provides a link to (1) documentation, (2) model description, (3) Github repository, (4) MATLAB livescript and (5) Researchgate page.</p>'+
-			'<h5>Block 2: Time series</h5>'+
-			'<p>The second block (hidden by default on the website) shows three time series, each in a different tab (2a): </p>'+
-			'<ul><li> Densities profile shows the bird densities [bird/km2] at a specific location.</li>'+
-			'<li>Sum profile shows the total number of bird [bird] over an area.</li>'+
-			'<li>MRT profile shows the mean traffic rate (MTR) [bird/km/hr] perpendicular to a transect.</li></ul>'+
-			'<p>A dotted vertical line (2d) appears on each time series to show the current time frame displayed on the map (Block 1). Basic interactive tools for the visualization of the time series include zooming on a specific time period (day, week or all periods) ((2b) and general zoom and auto-scale functions (2e). Each time serie can be displayed or hidden by clicking on its legend (2c).</p>'+
-			'<p>The main feature of this block is the ability to visualise bird densities at any location chosen on the map. For the densities profile tab, the button with a marker icon (2f) allows users to plot a marker on the map, and displays the bird densities profile with uncertainty (quantile 10 and 90) on the time series corresponding to this location. Users can plot several markers to compare the different locations. Similarly, for the sum profile, the button with a polygon icon (2f) allows users to draw any polygon and returns the time series of the total number of birds flying over this area (Figure~\ref{fig:E3}). For the MTR tab, the flux of birds is computed on a segment (line of two points) by multiplying the bird densities  with the local flight speed perpendicular to that segment. </p>'+
-			'<h5>Block 3: Time control</h5>'+
-			'<p>The third block shows the time progression of the animated map with a draggable slider (3d). Users can control the time with the buttons play/pause (3b), previous (3a) and next frame (3c). The speed of animation can be changed with a slider (3e).</p>'+
-			'<h2>API</h2>'+
-			'<p>An API based on mangodb and NodeJS allows users to download any time serie described in Block 2. Instructions can be found on www.github.com/Rafnuss-PostDoc/BMM-web#how-to-use-the-api</p>'
+			`<img id="instruction-img" src="https://github.com/Rafnuss-PostDoc/BMM-web/raw/master/FigureS5-1.png">
+			<h5>Block 1: Interactive map</h5>
+			<p>The main block of the website is a map with interactive visualization tools (e.g. zoom and pan). On top of this map, three layers can be displayed:</p>'+ 
+			'<ul><li>The first layer illustrates bird densities in a log-color scale. This layer can display either the estimation map or a single simulation map. Users can choose using the drop-down menu (1a).</li>
+			<li>The second layer displays the rain in light blue. The layer can be hidden/displayed using the checkbox (1b).</li>
+			<li>The third layer corresponds to bird flight speed and direction, visualized by black arrows. The checkbox (1c) allows users to display/hide this layer. </li></ul>
+			<p>Finally, the menu (1d) provides a link to (1) documentation, (2) model description, (3) Github repository, (4) MATLAB livescript and (5) Researchgate page.</p>
+			<h5>Block 2: Time series</h5>
+			<p>The second block (hidden by default on the website) shows three time series, each in a different tab (2a): </p>
+			<ul><li> Densities profile shows the bird densities [bird/km2] at a specific location.</li>
+			<li>Sum profile shows the total number of bird [bird] over an area.</li>
+			<li>MRT profile shows the mean traffic rate (MTR) [bird/km/hr] perpendicular to a transect.</li></ul>
+			<p>A dotted vertical line (2d) appears on each time series to show the current time frame displayed on the map (Block 1). Basic interactive tools for the visualization of the time series include zooming on a specific time period (day, week or all periods) ((2b) and general zoom and auto-scale functions (2e). Each time serie can be displayed or hidden by clicking on its legend (2c).</p>
+			<p>The main feature of this block is the ability to visualise bird densities at any location chosen on the map. For the densities profile tab, the button with a marker icon (2f) allows users to plot a marker on the map, and displays the bird densities profile with uncertainty (quantile 10 and 90) on the time series corresponding to this location. Users can plot several markers to compare the different locations. Similarly, for the sum profile, the button with a polygon icon (2f) allows users to draw any polygon and returns the time series of the total number of birds flying over this area (Figure~\ref{fig:E3}). For the MTR tab, the flux of birds is computed on a segment (line of two points) by multiplying the bird densities  with the local flight speed perpendicular to that segment. </p>
+			<h5>Block 3: Time control</h5>
+			<p>The third block shows the time progression of the animated map with a draggable slider (3d). Users can control the time with the buttons play/pause (3b), previous (3a) and next frame (3c). The speed of animation can be changed with a slider (3e).</p>
+			<h2>API</h2>
+			<p>An API based on mangodb and NodeJS allows users to download any time serie described in Block 2. Instructions can be found on www.github.com/Rafnuss-PostDoc/BMM-web#how-to-use-the-api</p>
+			<h5>marker_density</h5>
+			<p>Query the bird density [bird/km^2] at a location defined by its coordinates (lat, lng). </p>
+			<pre><code>https://bmm.raphaelnussbaumer.com/api/marker_density/{{lat}},{{lng}}</code></pre>
+			<p>Exemple:</p>
+			<pre><code>https://bmm.raphaelnussbaumer.com/api/marker_density/60.58696734225869,14.941406250000002</code></pre>
+			<p>The return a json dataset containing the estimated density <code>density.est</code> togethuer with the 10 and 90th quantile <code>density.q10</code> and <code>density.e90</code>. The same query also return the north-south and east-west flight vector as <code>u</code> and <code>v</code> respectively. Each data return a vector of size ... </p>
+<pre><code>{
+	"density": {
+		"est": [],
+		"q10": [],
+		"q90": [],
+	},
+	"u": [],
+	"v": [],
+	}</code></pre>
+	<pre><code>{
+	"density": {
+		"est": [],
+		"q10": [],
+		"q90": [],
+	},
+	"u": [],
+	"v": [],
+}</code></pre>
+			<h5>Sum of bird over an area</h5>
+			<pre><code>https://bmm.raphaelnussbaumer.com/api/polygon_sum/{{lat}},{{lng}}/</code></pre>
+			<p>Exemple:</p>
+			<pre><code>https://bmm.raphaelnussbaumer.com/api/polygon_sum/51.6180165487737,8.349609375000002/49.61070993807422,7.954101562500001/49.5822260446217,12.260742187500002/52.214338608258224,17.226562500000004</code></pre>
+			
+			<h5>Mean bird traffic over a transect</h5>
+			<pre><code>https://bmm.raphaelnussbaumer.com/api/polyline_mtr/{{lat1}},{{lng1}}/{{lat2}},{{lng2}}/</code></pre>
+			<p>Exemple:</p>
+			<pre><code>https://bmm.raphaelnussbaumer.com/api/polyline_mtr/48.980216985374994,1.1425781250000002/45.89000815866184,8.525390625000002</code></pre>
+			
+			<h2>Packaged used</h2>
+			[leaflet](https://leafletjs.com/) is used manage the map and various layer, <a href="https://github.com/socib/Leaflet.TimeDimension">Leaflet.TimeDimension</a> controls the time and interaction with the layer. The data query on the time series are served by <a href="https://nodejs.org/">Nodejs</a> and stoed by <a href="https://www.mongodb.com/">Mongodb</a>. 
+			
+			<h2>Download data</h2>
+			<ul>
+				<li>The raw data used in this study are found on the repository of [European Network for the Radar surveillance of Animal Movement (ENRAM)](http://enram.github.io/data-repository/) and were generated with [vol2bird](https://github.com/adokter/vol2bird).</li>
+				<li>These data were cleaned manually into vertical profile of reflectivity. These data are available on zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3243397.svg)](https://doi.org/10.5281/zenodo.3243397)</li>
+				<li>The final interpolated spatio-temporal map can also be downloaded from zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3243397.svg)](https://doi.org/10.5281/zenodo.3243397).</li>
+			</ul>
+			`
 		});
 	});
 
@@ -359,13 +403,13 @@ jQuery(document).ready(function() {
 
 	map.on(L.Draw.Event.CREATED, function (e) {
 
-		e.layer.bindPopup(''+
-			'<div class="modal-header">'+
-			'<h4 class="modal-title"><i class="fa fa-spinner fa-pulse fa-fw"></i> Loading</h4>'+
-			'</div>'+
-			'<div class="modal-body">'+
-			'Computing the timeserie requested. Please, wait up to a minute.'+
-			'</div>');
+		e.layer.bindPopup(`
+			<div class="modal-header">
+			<h4 class="modal-title"><i class="fa fa-spinner fa-pulse fa-fw"></i> Loading</h4>
+			</div>
+			<div class="modal-body">
+			Computing the timeserie requested. Please, wait up to a minute.
+			</div>`);
 		//'<a class="btn btn-success" href="'+link+'" target="_blank" download style="color:white;"><i class="fas fa-download"></i> Downolad data </a><br><a class="btn btn-defaul" style="color:black;" href="https://github.com/Rafnuss-PostDoc/BMM-web#how-to-use-the-api" target="_blank"><i class="fas fa-info-circle"></i> More info </a>')
 		drawn.addLayer(e.layer);
 		e.layer.openPopup();
@@ -460,10 +504,10 @@ jQuery(document).ready(function() {
 	gd_sum.i_group=1;
 	gd_mtr.i_group=1;
 
-	jQuery.getJSON("https://bmm.raphaelnussbaumer.com/2016/data/API/exportEst_time.json",function(data){
+	jQuery.getJSON("./data/API/exportEst_time.json",function(data){
 		est_time=data[0];
 
-		jQuery.getJSON("https://bmm.raphaelnussbaumer.com/2016/data/API/exportSim_time.json",function(data){
+		jQuery.getJSON("./data/API/exportSim_time.json",function(data){
 
 			sim_time=data[0];
 			sim_time_d = sim_time.map(x=> new Date(x));
@@ -562,7 +606,7 @@ jQuery(document).ready(function() {
 			}, 2000);
 
 
-			jQuery.getJSON('https://bmm.raphaelnussbaumer.com/2016/data/API/global.json', function(data){
+			jQuery.getJSON('./data/API/global.json', function(data){
 				var name = "Total Sum ("+KMBFormatter(data.area)+' km<sup>2</sup>)';
 				loadNewData(gd_sum,[data.avg,data.min,data.max],sim_time,name)
 
